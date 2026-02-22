@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
+	"net/http"
+	"notas-app-go/internal/api"
+	"notas-app-go/internal/data"
 	"os"
 	"time"
 
@@ -44,5 +48,21 @@ func main() {
 	}
 	log.Println("Conectado con MongoDB!")
 	log.Printf("Servicio iniciado en el puerto: %s\n", webPort)
+
+	app := &api.Application{
+		Notas: data.NotaModel{Client: client},
+	}
+
+	// Definir el servidor http
+	srv := http.Server{
+		Addr:    fmt.Sprintf(":%s", webPort),
+		Handler: app.Routes(),
+	}
+
+	// Iniciar el servidor
+	err = srv.ListenAndServe()
+	if err != nil {
+		log.Panic(err)
+	}
 
 }
