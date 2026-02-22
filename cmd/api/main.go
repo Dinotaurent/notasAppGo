@@ -33,7 +33,7 @@ func main() {
 	}
 
 	// Timeout para la conexion con la db
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
 	defer cancel()
 
 	// Verificiar la conexion
