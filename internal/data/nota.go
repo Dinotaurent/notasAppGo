@@ -6,6 +6,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type Nota struct {
@@ -26,22 +27,53 @@ func (m *NotaModel) Insert(n Nota) error {
 	return err
 }
 
-func (m *NotaModel) GetAll() ([]Nota, error) {
+//func (m *NotaModel) GetAll() ([]Nota, error) {
+//	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+//	defer cancel()
+//
+//	cursor, err := m.Client.Database("notasdb").Collection("notas").Find(ctx, bson.M{})
+//	if err != nil {
+//		return nil, err
+//	}
+//	defer cursor.Close(ctx)
+//
+//	var notas []Nota
+//	err = cursor.All(ctx, &notas)
+//	if err != nil {
+//		return nil, err
+//	}
+//	return notas, nil
+//}
+
+func (m *NotaModel) GetAll(page, size int64) ([]Nota, int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	cursor, err := m.Client.Database("notasdb").Collection("notas").Find(ctx, bson.M{})
+	collection := m.Client.Database("notasdb").Collection("notas")
+
+	// Contar el total de documentos (Indispensable para el frontend)
+	total, err := collection.CountDocuments(ctx, bson.D{})
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	// Aplicar Skip y Limit
+	opts := options.Find().
+		SetSkip((page - 1) * size).
+		SetLimit(size)
+
+	cursor, err := collection.Find(ctx, bson.D{}, opts)
+	if err != nil {
+		return nil, 0, err
 	}
 	defer cursor.Close(ctx)
 
 	var notas []Nota
-	err = cursor.All(ctx, &notas)
-	if err != nil {
-		return nil, err
+	if err := cursor.All(ctx, &notas); err != nil {
+		return nil, 0, err
 	}
-	return notas, nil
+
+	return notas, total, nil
 }
 
 func (m *NotaModel) GetByID(id string) (Nota, error) {
