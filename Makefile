@@ -44,7 +44,20 @@ k8_delete:
 	@echo "Eliminando recursos del cluster..."
 	kubectl delete -f $(K8S_YAML)
 
+k8_mongo_deploy:
+	@echo "Aplicando archivos YAML  de mongo en el cluster..."
+	kubectl apply -f mongoDeploy.yaml
+
+k8_mongo_delete:
+	@echo "Eliminando recursos del cluster..."
+	kubectl delete -f mongoDeploy.yaml
+
 k8_deploy:
+	# Mongo db y express
+	@echo "Aplicando archivos YAML  de mongo en el cluster..."
+	kubectl apply -f mongoDeploy.yaml
+
+	# Notas App
 	@echo "Preparando imagen: $(IMAGE_FULL)..."
 	podman build -t $(IMAGE_FULL) .
 	@echo "Subiendo a Docker Hub..."
@@ -59,3 +72,4 @@ k8_deploy:
 k8_logs:
 	@echo "Mostrando logs del broker..."
 	kubectl logs -f deployment/$(SERVICE_NAME)
+
