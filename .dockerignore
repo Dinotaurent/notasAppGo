@@ -1,0 +1,53 @@
+# ==============================================================================
+# PLANTILLA .DOCKERIGNORE PARA PROYECTOS FULL-STACK (Go/Astro/Docker)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. ARCHIVOS DE GIT Y CONTROL DE VERSIONES
+# ------------------------------------------------------------------------------
+.git
+.gitignore
+.gitattributes
+
+# ------------------------------------------------------------------------------
+# 2. CREDENCIALES Y SECRETOS (CRÍTICO PARA SEGURIDAD)
+# ------------------------------------------------------------------------------
+# Nunca incluyas archivos .env en la imagen.
+# Las variables deben pasarse vía 'environment' en docker-compose o K8s.
+.env
+.env.*
+config/secrets.json
+*.pem
+*.key
+
+# ------------------------------------------------------------------------------
+# 3. BACKEND - GO (Binarios y Caché)
+# ------------------------------------------------------------------------------
+# Ignoramos binarios del host. Docker debe compilar su propio binario (Linux).
+/bin/
+/out/
+*.exe
+*.test
+*.out
+
+# ------------------------------------------------------------------------------
+# 6. ARCHIVOS DEL SISTEMA E IDEs
+# ------------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.bak
+
+# ------------------------------------------------------------------------------
+# 7. DOCKER Y VOLÚMENES (Evita recursividad)
+# ------------------------------------------------------------------------------
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile
+Dockerfile.*
+.docker/
+# Datos de bases de datos locales
+mongo-vol/
+pgdata/

@@ -5,6 +5,7 @@ ifneq ("$(wildcard .env)","")
 endif
 
 # 2. VARIABLES (Valores del .env o por defecto)
+BINARY ?= notasApp
 DOCKER_USER   ?= dinotaurent
 VERSION       ?= latest
 REGISTRY       = docker.io
@@ -22,7 +23,8 @@ up:
 up_build:build_notas-app-go
 	@echo "Reconstruyendo y levantando local..."
 	podman compose down
-	podman compose up --build -d
+	#podman compose up --build -d                         # Para crear sin el mongoweb-notas
+	podman compose --profile debug up --build -d          # Para crear el mongoweb-notas tambien
 
 down:
 	@echo "Deteniendo contenedores locales..."
@@ -30,7 +32,7 @@ down:
 
 build_notas-app-go:
 	@echo "Compilando binario de Go para Linux..."
-	env GOOS=linux CGO_ENABLED=0 go build -o ${BROKER_BINARY} ./cmd/api
+	env GOOS=linux CGO_ENABLED=0 go build -o ${BINARY} ./cmd/api
 
 # --- COMANDOS DE KUBERNETES ---
 
@@ -42,7 +44,20 @@ k8_delete:
 	@echo "Eliminando recursos del cluster..."
 	kubectl delete -f $(K8S_YAML)
 
+k8_mongo_deploy:
+	@echo "Aplicando archivos YAML  de mongo en el cluster..."
+	kubectl apply -f mongoDeploy.yaml
+
+k8_mongo_delete:
+	@echo "Eliminando recursos del cluster..."
+	kubectl delete -f mongoDeploy.yaml
+
 k8_deploy:
+	# Mongo db y express
+	@echo "Aplicando archivos YAML  de mongo en el cluster..."
+	kubectl apply -f mongoDeploy.yaml
+
+	# Notas App
 	@echo "Preparando imagen: $(IMAGE_FULL)..."
 	podman build -t $(IMAGE_FULL) .
 	@echo "Subiendo a Docker Hub..."
@@ -57,3 +72,4 @@ k8_deploy:
 k8_logs:
 	@echo "Mostrando logs del broker..."
 	kubectl logs -f deployment/$(SERVICE_NAME)
+

@@ -10,6 +10,7 @@ config/secrets.json
 .idea/
 /queries/
 /dataSources/
+notasApp
 
 # VS Code y Otros
 .vscode/
@@ -55,6 +56,8 @@ kubeconfig
 *.key
 *.crt
 *.pem
+notasDeploy.yaml
+mongoDeploy.yaml
 
 # ------------------------------------------------------------------------------
 # LOGS Y TEMPORALES

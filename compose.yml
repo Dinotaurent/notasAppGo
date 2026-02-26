@@ -1,0 +1,58 @@
+services:
+  db:
+    image: mongo:latest
+    container_name: ${MONGO_DB}
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+    volumes:
+      - mongo-vol:/data/db
+
+  mongo_express:
+    profiles:
+      - debug
+      # podman compose --profile debug up -d   para que cree este contenedor
+    depends_on:
+      - db
+    image: mongo-express:1.0.2-20-alpine3.19
+    container_name: mongoweb-notas
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USER}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: ${MONGO_DB}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@db:${MONGO_PORT}/
+      ME_CONFIG_BASICAUTH_USERNAME: ${WEB_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${WEB_PASSWORD}
+    ports:
+      - 8081:8081
+    restart: always
+
+  notas-go:
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dinotaurent/notas-go:${VERSION}
+    container_name: notas-go-${VERSION}
+    restart: on-failure
+    env_file:
+      - .env
+    environment:
+      MONGO_HOST: db
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_DB: ${MONGO_DB}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGODB_URL: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@db:${MONGO_PORT}/${MONGO_DB}?authSource=admin
+    ports:
+      - "8080:8080"
+    deploy:
+      mode: replicated
+      replicas: 1
+
+volumes:
+  mongo-vol:
+    external: false
