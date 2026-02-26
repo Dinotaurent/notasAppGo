@@ -5,6 +5,7 @@ ifneq ("$(wildcard .env)","")
 endif
 
 # 2. VARIABLES (Valores del .env o por defecto)
+BINARY ?= notasApp
 DOCKER_USER   ?= dinotaurent
 VERSION       ?= latest
 REGISTRY       = docker.io
@@ -22,7 +23,8 @@ up:
 up_build:build_notas-app-go
 	@echo "Reconstruyendo y levantando local..."
 	podman compose down
-	podman compose up --build -d
+	#podman compose up --build -d                         # Para crear sin el mongoweb-notas
+	podman compose --profile debug up --build -d          # Para crear el mongoweb-notas tambien
 
 down:
 	@echo "Deteniendo contenedores locales..."
@@ -30,7 +32,7 @@ down:
 
 build_notas-app-go:
 	@echo "Compilando binario de Go para Linux..."
-	env GOOS=linux CGO_ENABLED=0 go build -o ${BROKER_BINARY} ./cmd/api
+	env GOOS=linux CGO_ENABLED=0 go build -o ${BINARY} ./cmd/api
 
 # --- COMANDOS DE KUBERNETES ---
 
